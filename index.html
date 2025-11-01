@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overlay Animasi Tengkorak Seram</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #1a1a1a;
+            color: white;
+            text-align: center;
+            padding-top: 50px;
+            margin: 0;
+        }
+
+        .trigger-button {
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background-color: #8b0000;
+            border: 2px solid #ff4500;
+            border-radius: 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .trigger-button:hover {
+            background-color: #ff4500;
+            box-shadow: 0 0 20px #ff4500;
+        }
+
+        .overlay-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95); /* Lebih pekat */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        .overlay-container.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .skull-image {
+            width: 90%;
+            max-width: 400px;
+            opacity: 0;
+            cursor: default;
+            filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.8)) 
+                    drop-shadow(0 0 50px rgba(255, 0, 0, 0.6));
+        }
+
+        /* --- KUMPULAN ANIMASI BARU --- */
+
+        /* 1. Animasi Muncul */
+        @keyframes fadeInSkull {
+            from { opacity: 0; transform: scale(0.3); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* 2. Animasi Getaran (Shake) */
+        @keyframes shakeEffect {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            10%, 30%, 50%, 70%, 90% { transform: translate(-3px, 3px) rotate(-2deg); }
+            20%, 40%, 60%, 80% { transform: translate(3px, -3px) rotate(2deg); }
+        }
+
+        /* 3. Animasi Kilatan Petir (Flash) */
+        @keyframes flashEffect {
+            0%, 50%, 100% { filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.8)) drop-shadow(0 0 50px rgba(255, 0, 0, 0.6)); }
+            25%, 75% { filter: drop-shadow(0 0 25px white) drop-shadow(0 0 70px white) brightness(2.5); }
+        }
+
+        /* 4. Animasi Menghilang */
+        @keyframes fadeOutSkull {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(0.4); }
+        }
+
+        /* --- MENERAPKAN ANIMASI --- */
+
+        /* Saat overlay aktif, jalankan animasi muncul, getar, dan kilat */
+        .overlay-container.active .skull-image {
+            /* Format: nama animasi, durasi, fungsi waktu, jeda, jumlah iterasi, mode akhir */
+            animation: 
+                fadeInSkull 2s ease-out forwards,
+                shakeEffect 0.4s linear 2s 10, /* Mulai setelah 2 detik, bergetar 10x */
+                flashEffect 1s ease-in-out 2.5s 3; /* Mulai setelah 2.5 detik, berkedip 3x */
+        }
+        
+        /* Saat class 'hiding' ditambahkan, jalankan animasi menghilang */
+        .overlay-container.hiding .skull-image {
+            animation: fadeOutSkull 1s ease-in forwards;
+        }
+
+    </style>
+</head>
+<body>
+
+   
+    <button id="showOverlayBtn" class="trigger-button">Tampilkan </button>
+
+    <div id="scaryOverlay" class="overlay-container">
+        <img src="Saa-removebg-preview.png" alt="Tengkorak Seram" class="skull-image">
+    </div>
+
+    <audio id="scarySound" src="ssstik.io_1761663695910.mp3" preload="auto"></audio>
+
+    <script>
+        const showOverlayBtn = document.getElementById('showOverlayBtn');
+        const overlay = document.getElementById('scaryOverlay');
+        const sound = document.getElementById('scarySound');
+        let hideTimeout; // Variabel untuk menyimpan timer
+
+        showOverlayBtn.addEventListener('click', () => {
+            // Hapus timer lama jika ada & reset class
+            clearTimeout(hideTimeout);
+            overlay.classList.remove('hiding');
+            
+            // Tampilkan overlay dan putar suara
+            overlay.classList.add('active');
+            sound.currentTime = 0;
+            sound.play();
+
+            // Atur timer untuk mulai MENGHILANG setelah 6 detik
+            hideTimeout = setTimeout(() => {
+                overlay.classList.add('hiding'); // Memicu animasi fade-out
+
+                // Atur timer lagi untuk MENUTUP total overlay setelah animasi fade-out selesai (1 detik)
+                setTimeout(() => {
+                    overlay.classList.remove('active');
+                    overlay.classList.remove('hiding');
+                    sound.pause();
+                }, 1000); 
+
+            }, 6000); // 6 detik (2s muncul + 4s diam/bergetar)
+        });
+
+        // Fungsi untuk menutup overlay jika latar belakang diklik
+        overlay.addEventListener('click', (event) => {
+            if (event.target === overlay) {
+                clearTimeout(hideTimeout); // Batalkan timer otomatis
+                overlay.classList.remove('active');
+                overlay.classList.remove('hiding');
+                sound.pause();
+            }
+        });
+    </script>
+
+</body>
+</html>
